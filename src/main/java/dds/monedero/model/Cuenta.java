@@ -11,7 +11,9 @@ import java.util.List;
 
 public class Cuenta {
 
-  private double saldo = 0;
+  private double saldo;
+  private static final double limiteDiario = 1000;
+  private static final int limiteExtracciones = 3;
   private List<Movimiento> movimientos = new ArrayList<>();
 
   public Cuenta() {
@@ -23,32 +25,21 @@ public class Cuenta {
   }
 
   public void poner(double cuanto) {
-    if (cuanto <= 0) {
-      throw new MontoNegativoException(cuanto + ": el monto a ingresar debe ser un valor positivo");
-    }
-
-    if (getMovimientos().stream()
-        .filter(movimiento -> movimiento.fueDepositado(LocalDate.now()))
-        .count() >= 3) {
-      throw new MaximaCantidadDepositosException("Ya excedio los " + 3 + " depositos diarios");
-    }
+    validarMontoPositivo(cuanto);
+    validarLimiteExtracciones();
+    validarLimiteDiario(cuanto);
 
     new Movimiento(LocalDate.now(), cuanto, true).agregateA(this);
   }
 
   public void sacar(double cuanto) {
-    if (cuanto <= 0) {
-      throw new MontoNegativoException(cuanto + ": el monto a ingresar debe ser un valor positivo");
-    }
+
+    validarMontoPositivo(cuanto);
+
     if (getSaldo() - cuanto < 0) {
       throw new SaldoMenorException("No puede sacar mas de " + getSaldo() + " $");
     }
-    var montoExtraidoHoy = getMontoExtraidoA(LocalDate.now());
-    var limite = 1000 - montoExtraidoHoy;
-    if (cuanto > limite) {
-      throw new MaximoExtraccionDiarioException(
-          "No puede extraer mas de $ " + 1000 + " diarios, " + "límite: " + limite);
-    }
+
     new Movimiento(LocalDate.now(), cuanto, false).agregateA(this);
   }
 
@@ -80,4 +71,26 @@ public class Cuenta {
     this.saldo = saldo;
   }
 
+  public void validarMontoPositivo(double monto) {
+    if (monto <= 0) {
+      throw new MontoNegativoException(monto+ ": el monto a ingresar debe ser un valor positivo");
+    }
+  }
+
+  public void validarLimiteDiario(double monto) {
+    var montoExtraidoHoy = getMontoExtraidoA(LocalDate.now());
+    var limite = limiteDiario - montoExtraidoHoy;
+    if (monto > limite) {
+      throw new MaximoExtraccionDiarioException(
+          "No puede extraer mas de $ " + limiteDiario + " diarios, " + "límite: " + limite);
+    }
+  }
+
+  public void validarLimiteExtracciones() {
+    if (getMovimientos().stream()
+        .filter(movimiento -> movimiento.fueDepositado(LocalDate.now()))
+        .count() >= limiteExtracciones) {
+        throw new MaximaCantidadDepositosException("Ya excedio los " + limiteExtracciones + " depositos diarios");
+    }
+  }
 }
