@@ -56,11 +56,7 @@ public class Cuenta {
   }
 
   public List<Movimiento> getMovimientos() {
-    return movimientos;
-  }
-
-  public void setMovimientos(List<Movimiento> movimientos) {
-    this.movimientos = movimientos;
+    return List.copyOf(movimientos);
   }
 
   public double getSaldo() {
