@@ -14,14 +14,10 @@ public class Cuenta {
   private double saldo;
   private static final double limiteDiario = 1000;
   private static final int limiteExtracciones = 3;
-  private List<Movimiento> movimientos = new ArrayList<>();
+  private final List<Movimiento> movimientos = new ArrayList<>();
 
   public Cuenta() {
-    saldo = 0;
-  }
-
-  public Cuenta(double montoInicial) {
-    saldo = montoInicial;
+    this.saldo = 0;
   }
 
   public void poner(double cuanto) {
